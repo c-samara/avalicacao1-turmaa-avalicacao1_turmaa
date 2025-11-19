@@ -1,0 +1,31 @@
+name: Python CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Rodar Lint (flake8)
+        run: |
+          flake8 .
+
+      - name: Rodar Testes (pytest)
+        run: |
+          pytest --maxfail=1 --disable-warnings -q
