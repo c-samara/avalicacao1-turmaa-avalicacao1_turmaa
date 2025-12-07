@@ -19,7 +19,7 @@ jobs:
 
       - name: Instalar dependências
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Rodar Lint (flake8)
@@ -29,3 +29,8 @@ jobs:
       - name: Rodar Testes (pytest)
         run: |
           pytest --maxfail=1 --disable-warnings -q
+
+      - name: Rodar Segurança (pip audit)
+        run: |
+          pip install pip-audit
+          pip-audit || true
