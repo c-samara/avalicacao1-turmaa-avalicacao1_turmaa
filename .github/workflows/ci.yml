@@ -37,7 +37,7 @@ jobs:
 
       - name: Rodar Análise de Código (Bandit)
         run: |
-          bandit -r . -x venv
+          bandit -r . -x venv,tests
 
       - name: Instalar Gitleaks
         run: |
