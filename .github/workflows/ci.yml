@@ -25,11 +25,13 @@ jobs:
 
       - name: Rodar Lint (flake8)
         run: |
-          flake8 .
+          flake8 . --tee --output-file flake8-report.txt
+
 
       - name: Rodar Testes (pytest)
         run: |
-          pytest --maxfail=1 --disable-warnings -q
+          pytest --maxfail=1 --disable-warnings -q --junitxml=pytest-report.xml
+
 
       - name: Rodar Segurança (pip audit)
         run: |
