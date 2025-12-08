@@ -23,25 +23,27 @@ jobs:
           pip install -r requirements.txt
           pip install bandit pip-audit
 
+
       - name: Rodar Lint (flake8)
         run: |
           flake8 . --tee --output-file flake8-report.txt
 
-
+      
       - name: Rodar Testes (pytest)
         run: |
           pytest --maxfail=1 --disable-warnings -q --junitxml=pytest-report.xml
 
-
+      
       - name: Rodar Segurança (pip audit)
         run: |
-          pip-audit || true
+          pip-audit -f json -o pip_audit_report.json || true
 
+      
       - name: Rodar Análise de Código (Bandit)
         run: |
-          bandit -r . -x venv -s B101
+          bandit -r . -x venv -s B101 -f txt -o bandit_report.txt
 
-
+      
       - name: Instalar Gitleaks
         run: |
           GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | \
@@ -52,12 +54,23 @@ jobs:
           sudo mv gitleaks /usr/local/bin/gitleaks
           gitleaks version
 
-
+      
       - name: Rodar Gitleaks (segredos no git)
         run: |
           gitleaks detect \
-          --source . \
-          --report-format json \
-          --report-path gitleaks-report.json \
-          --exit-code 1
+            --source . \
+            --report-format json \
+            --report-path gitleaks-report.json \
+            --exit-code 1
 
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-ci
+          path: |
+            flake8-report.txt
+            pytest-report.xml
+            pip_audit_report.json
+            bandit_report.txt
+            gitleaks-report.json
