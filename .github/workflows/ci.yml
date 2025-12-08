@@ -23,39 +23,31 @@ jobs:
           pip install -r requirements.txt
           pip install bandit pip-audit
 
-
       - name: Rodar Lint (flake8)
         run: |
           flake8 . --tee --output-file flake8-report.txt
 
-      
       - name: Rodar Testes (pytest)
         run: |
           pytest --maxfail=1 --disable-warnings -q --junitxml=pytest-report.xml
 
-      
       - name: Rodar Segurança (pip audit)
         run: |
           pip-audit -f json -o pip_audit_report.json || true
 
-      
       - name: Rodar Análise de Código (Bandit)
         run: |
           bandit -r . -x venv -s B101 -f txt -o bandit_report.txt
 
-      
       - name: Instalar Gitleaks
         run: |
           GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | \
           python -c "import sys, json; print(json.load(sys.stdin)['tag_name'])")
-          echo "Baixando Gitleaks $GITLEAKS_VERSION"
           curl -sL "https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION#v}_linux_x64.tar.gz" -o gitleaks.tar.gz
           tar -xzf gitleaks.tar.gz
           sudo mv gitleaks /usr/local/bin/gitleaks
-          gitleaks version
 
-      
-      - name: Rodar Gitleaks (segredos no git)
+      - name: Rodar Gitleaks (segredos)
         run: |
           gitleaks detect \
             --source . \
@@ -63,14 +55,33 @@ jobs:
             --report-path gitleaks-report.json \
             --exit-code 1
 
-      
-      - name: Upload Artifacts
+      - name: Gerar Build da Aplicação
+        run: |
+          python -m compileall .
+          zip -r build-artifact.zip __pycache__
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-da-aplicacao
+          path: build-artifact.zip
+
+      - name: Upload Reports
         uses: actions/upload-artifact@v4
         with:
           name: relatorios-ci
           path: |
             flake8-report.txt
             pytest-report.xml
-            pip_audit_report.json
             bandit_report.txt
+            pip_audit_report.json
+            gitleaks-report.json
+
+      - name: Upload Security Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artefatos-de-seguranca
+          path: |
+            bandit_report.txt
+            pip_audit_report.json
             gitleaks-report.json
