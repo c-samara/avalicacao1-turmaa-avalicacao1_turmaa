@@ -58,13 +58,12 @@ jobs:
       - name: Gerar Build da Aplicação
         run: |
           python -m compileall .
-          zip -r build-artifact.zip __pycache__
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-da-aplicacao
-          path: build-artifact.zip
+          path: "**/*.pyc"
 
       - name: Upload Reports
         uses: actions/upload-artifact@v4
